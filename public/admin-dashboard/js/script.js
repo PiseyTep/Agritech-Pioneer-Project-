@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://172.20.10.3:8000/api";
+const API_URL = 'http://172.20.10.3:8000/api';
 
 // Check if DOM is loaded before accessing elements
 document.addEventListener("DOMContentLoaded", function() {

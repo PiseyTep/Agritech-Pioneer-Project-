@@ -1,10 +1,16 @@
 /* Farmers Management Specific Styles */
-
+/* Main Content */
+.dashboard-content {
+    margin-left: 220px;
+    width: calc(100% - 20px);
+    padding: 30px;
+    transition: all 0.3s ease;
+}
 .farmers-container {
     background-color: white;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 25px;
+    padding: 10px;
     margin-bottom: 25px;
 }
 

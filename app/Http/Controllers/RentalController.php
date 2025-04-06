@@ -6,7 +6,7 @@ use App\Models\Rental;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Log;
 class RentalController extends Controller
 {
     // Get all rentals (admin access)
@@ -65,18 +65,68 @@ class RentalController extends Controller
         ]);
     }
     
-    // Create a new rental
-    public function store(Request $request)
+    // Store a new rental request
+public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'tractor_id' => 'required|exists:tractors,id',
+        'rental_date' => 'required|date|after:yesterday',
+        'land_size' => 'required|numeric|min:0.1',
+        'land_size_unit' => 'required|string|in:Acres,Hectares',
+        'farmer_name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string|max:255',
+        'total_price' => 'required|numeric|min:0',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+    
+    // Check if tractor is available
+    $tractor = Tractor::findOrFail($request->tractor_id);
+    
+    if (!$tractor->is_available || $tractor->stock <= 0) {
+        return response()->json([
+            'success' => false,
+            'message' => 'This tractor is currently unavailable for booking'
+        ], 400);
+    }
+    
+    // Create the rental
+    $rental = new Rental([
+        'tractor_id' => $request->tractor_id,
+        'user_id' => auth()->id(),
+        'rental_date' => $request->rental_date,
+        'land_size' => $request->land_size,
+        'land_size_unit' => $request->land_size_unit,
+        'farmer_name' => $request->farmer_name,
+        'phone' => $request->phone,
+        'address' => $request->address,
+        'total_price' => $request->total_price,
+        'status' => 'pending',
+    ]);
+    
+    $rental->save();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Booking request submitted successfully',
+        'data' => $rental
+    ], 201);
+}
+    
+    // Update rental status (for admin/super admin)
+    public function updateRentalStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'rental_date' => 'required|date|after_or_equal:today',
-            'return_date' => 'required|date|after_or_equal:rental_date',
-            'land_size' => 'nullable|numeric|min:0',
-            'land_size_unit' => 'nullable|string',
-            'notes' => 'nullable|string'
+            'status' => 'required|in:pending,approved,rejected,completed,cancelled',
+            'admin_notes' => 'nullable|string' // Add admin notes validation
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -84,82 +134,87 @@ class RentalController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        
-        // Calculate total price based on product pricing and rental days
-        $product = Product::findOrFail($request->product_id);
-        $rentalDate = new \DateTime($request->rental_date);
-        $returnDate = new \DateTime($request->return_date);
-        $days = $rentalDate->diff($returnDate)->days + 1; // Include both start and end days
-        
-        $totalPrice = $product->price_per_day * $days;
-        
-        // Add land size price if applicable
-        if ($request->has('land_size') && $request->land_size > 0 && $product->price_per_acre > 0) {
-            // Convert to acres if needed
-            $sizeInAcres = $request->land_size;
-            if ($request->land_size_unit === 'Hectares') {
-                $sizeInAcres = $request->land_size * 2.47105;
-            } elseif ($request->land_size_unit === 'Square Meters') {
-                $sizeInAcres = $request->land_size * 0.000247105;
-            }
-            
-            $totalPrice += $product->price_per_acre * $sizeInAcres;
-        }
-        
-        $rental = Rental::create([
-            'user_id' => $request->user()->id,
-            'product_id' => $request->product_id,
-            'rental_date' => $request->rental_date,
-            'return_date' => $request->return_date,
-            'land_size' => $request->land_size,
-            'land_size_unit' => $request->land_size_unit,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-            'notes' => $request->notes
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Rental created successfully',
-            'data' => $rental
-        ], 201);
-    }
-    
-    // Update a rental
-    public function update(Request $request, $id)
-    {
+
         $rental = Rental::findOrFail($id);
-        
-        // Only admins can update rentals after creation
-        if (auth()->user()->role === 'farmer') {
+
+
+        // Only allow admins to change status
+        if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized'
             ], 403);
         }
-        
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,approved,rejected,completed,cancelled'
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-        
         $rental->update([
-            'status' => $request->status
-        ]);
-        
+        'status' => $request->status,
+        'admin_notes' => $request->input('admin_notes', '') // Save admin notes
+    ]);
+
+
         return response()->json([
             'success' => true,
-            'message' => 'Rental updated successfully',
+            'message' => 'Rental status updated successfully',
             'data' => $rental
         ]);
     }
+  // Get all rentals for admin dashboard
+  public function getAllRentals(Request $request)
+  {
+      try {
+          \Log::channel('daily')->info('getAllRentals method called', [
+              'user_id' => auth()->id(),
+              'user_email' => auth()->user()->email,
+              'request_data' => $request->all()
+          ]);
+  
+          $user = auth()->user();
+          
+          // Explicit role check
+          if (!$user || !in_array($user->role, ['admin', 'super_admin'])) {
+              \Log::channel('daily')->warning('Unauthorized rental access attempt', [
+                  'user_id' => $user->id ?? 'N/A',
+                  'user_role' => $user->role ?? 'N/A'
+              ]);
+  
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Unauthorized access'
+              ], 403);
+          }
+  
+          $rentals = Rental::with(['user', 'product'])
+              ->when($request->has('status'), function($query) use ($request) {
+                  return $query->where('status', $request->status);
+              })
+              ->orderBy('created_at', 'desc')
+              ->get();
+  
+          return response()->json([
+              'success' => true,
+              'data' => $rentals->map(function($rental) {
+                  return [
+                      'id' => $rental->id,
+                      'farmer_name' => $rental->user->name ?? 'Unknown Farmer',
+                      'product_name' => $rental->product->name ?? 'Unknown Product',
+                      'rental_date' => $rental->rental_date,
+                      'status' => $rental->status
+                  ];
+              })
+          ]);
+      } catch (\Exception $e) {
+          \Log::channel('daily')->error('Rental fetch error', [
+              'error_message' => $e->getMessage(),
+              'error_trace' => $e->getTraceAsString()
+          ]);
+  
+          return response()->json([
+              'success' => false,
+              'message' => 'Internal server error',
+              'error' => $e->getMessage()
+          ], 500);
+      }
+  }
     
     // Cancel a rental (for farmers)
     public function cancel(Request $request, $id)

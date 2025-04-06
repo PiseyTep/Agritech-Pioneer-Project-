@@ -5,7 +5,13 @@
     box-sizing: border-box;
     font-family: 'Arial', sans-serif;
 }
-
+/* Main Content */
+.dashboard-content {
+    margin-left: 220px;
+    width: calc(100% - 20px);
+    padding: 30px;
+    transition: all 0.3s ease;
+}
 body {
     display: flex;
     background-color: #f5f7fa; /* Standardized background color */
@@ -90,7 +96,7 @@ header {
 }
 
 .table-section table {
-    width: 100%;
+    width: 10%;
     border-collapse: collapse;
 }
 

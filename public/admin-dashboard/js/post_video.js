@@ -5,7 +5,7 @@ document.getElementById('videoForm').addEventListener('submit', async function(e
     const video_url = document.getElementById('video_url').value;
     const description = 'Default description'; // Add input if needed
 
-    const response = await fetch('http://127.0.0.1:8000/api/videos', {
+    const response = await fetch('http://172.20.10.3:8000/api/videos', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('api_token')}`,

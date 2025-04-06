@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Add CSRF token meta tag -->
+     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Track Rentals</title>
     <link rel="stylesheet" href="../css/track_rental.css">
     <link rel="stylesheet" href="/LoginFarmer/Laravel-capstone/public/admin-dashboard/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
 </head>
 <body>
     <div class="dashboard-container">
@@ -16,15 +19,16 @@
                 <h2>AgriTech Pioneer</h2>
             </div>
             <ul>
-                <li><a href="index.php"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
-                <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Track Rentals</span></a></li>
-                <li><a href="#"><i class="fas fa-tractor"></i> <span>Manage Products</span></a></li>
-                <li><a href="#"><i class="fas fa-video"></i> <span>Post Video</span></a></li>
+                <li><a href="index.php"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="rentals.php"><i class="fas fa-exchange-alt"></i> Track Rentals</a></li>
+                <li><a href="tractors.php" class="active"><i class="fas fa-tractor"></i> Manage Tractors</a></li>
+               
+                <li><a href="#"><i class="fas fa-video"></i> Post Video</a></li>
                 <?php if ($isSuperAdmin): ?>
-                    <li><a href="manage_admins.php"><i class="fas fa-user-shield"></i> <span>Manage Admins</span></a></li>
+                    <li><a href="#"><i class="fas fa-user-shield"></i> Manage Admins</a></li>
                 <?php endif; ?>
-                <li><a href="manage_farmers.php" class="active"><i class="fas fa-user"></i> <span>Farmer Management</span></a></li>
-                <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                <li><a href="manage_farmers.php"><i class="fas fa-user"></i> Farmer Management</a></li>
+                <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
             <div class="sidebar-footer">
                 <p>&copy; 2025 AgriTech Pioneer</p>
@@ -61,7 +65,10 @@
     <a href="?role=super_admin" class="btn">Super Admin</a>
     <a href="?role=admin" class="btn">Admin</a>
 </div>
-
-    <script src="/LoginFarmer/Laravel-capstone/public/admin-dashboard/js/script.js"></script>
+<script src="/js/config.js"></script>
+    <!-- Add script at the end of body -->
+   
+    <script src="/LoginFarmer/Laravel-capstone/public/admin-dashboard/js/config.js"></script>
+    <script src="js/rental-management.js"></script>
 </body>
 </html>

@@ -1,5 +1,11 @@
 /* Admin Management Styles */
-
+/* Main Content */
+.dashboard-content {
+    margin-left: 220px;
+    width: calc(100% - 20px);
+    padding: 30px;
+    transition: all 0.3s ease;
+}
 /* Form and Table Section Shared Styles */
 .form-section,
 .table-section {

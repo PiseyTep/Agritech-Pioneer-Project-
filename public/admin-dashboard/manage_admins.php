@@ -60,16 +60,17 @@ try {
             <h2>AgriTech Pioneer</h2>
         </div>
         <ul>
-            <li><a href="index.php"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
-            <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Track Rentals</span></a></li>
-            <li><a href="#"><i class="fas fa-tractor"></i> <span>Manage Products</span></a></li>
-            <li><a href="#"><i class="fas fa-video"></i> <span>Post Video</span></a></li>
-            <?php if ($isSuperAdmin): ?>
-                <li><a href="manage_admins.php"><i class="fas fa-user-shield"></i> <span>Manage Admins</span></a></li>
-            <?php endif; ?>
-            <li><a href="manage_farmers.php" class="active"><i class="fas fa-user"></i> <span>Farmer Management</span></a></li>
-            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
-        </ul>
+                <li><a href="index.php"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="rentals.php"><i class="fas fa-exchange-alt"></i> Track Rentals</a></li>
+                <li><a href="tractors.php" class="active"><i class="fas fa-tractor"></i> Manage Tractors</a></li>
+               
+                <li><a href="#"><i class="fas fa-video"></i> Post Video</a></li>
+                <?php if ($isSuperAdmin): ?>
+                    <li><a href="#"><i class="fas fa-user-shield"></i> Manage Admins</a></li>
+                <?php endif; ?>
+                <li><a href="manage_farmers.php"><i class="fas fa-user"></i> Farmer Management</a></li>
+                <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         <div class="sidebar-footer">
             <p>&copy; 2025 AgriTech Pioneer</p>
         </div>
@@ -320,7 +321,7 @@ try {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
-
+<script src="/js/config.js"></script>
 <!-- Custom Scripts -->
 <script src="js/dashboard.js"></script>
 <script src="js/manage_farmers.js"></script>
